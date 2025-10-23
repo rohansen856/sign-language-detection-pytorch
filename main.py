@@ -8,7 +8,7 @@ cap = cv2.VideoCapture(0)
 cap.set(3, 700)
 cap.set(4, 480)
 
-modelo = torch.load('model_trained.pt')
+modelo = torch.load('model_trained.pt', weights_only=False)
 modelo.eval()
 
 signs = {'0': 'A', '1': 'B', '2': 'C', '3': 'D', '4': 'E', '5': 'F', '6': 'G', '7': 'H', '8': 'I',
