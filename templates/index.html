@@ -1,246 +1,263 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="shortcut icon" type="image/png" href="./favicon.png"/>
-
-    <link href="https://fonts.googleapis.com/css?family=Baloo+Chettan+2&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-
-
-    <title>ASL Detector</title>
-
+    <title>Sign Language Detection</title>
     <style>
         body {
-            height: 100vh;
-            width: 100vw;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(#1976D2, #03A9F4);
-            font-family: 'Baloo Chettan 2', cursive;
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
         }
 
         .container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        .main {
-            height: 90vh;
-            /* width: 60vw; */
-            background: #FFFFFF;
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .video-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        video {
+            border: 3px solid #007bff;
+            border-radius: 10px;
+            max-width: 100%;
+            height: auto;
+        }
+
+        canvas {
+            display: none;
+        }
+
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
             border-radius: 5px;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
         }
 
-        .video {
-            height: 50vh;
-            background: #30257F;
-            border-bottom: 15px solid #171558;
-            border-radius: 5px 5px 0 0;
-            display: flex;
-            justify-content: center;
+        button:hover {
+            background-color: #0056b3;
         }
 
-        .text {
-            display: flex;
-            padding: 5px 20px;
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
         }
 
-        .text > * > .title {
-            font-size: 20px;
-            opacity: 0.7;
+        .prediction {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
         }
 
-        .text > .left {
-            width: 40%;
+        .prediction h2 {
+            margin-top: 0;
+            color: #007bff;
         }
 
-        .text > .left > .content {
-            font-size: 25px;
+        .letter {
+            font-size: 48px;
+            font-weight: bold;
+            color: #28a745;
+            margin: 10px 0;
         }
 
-        .text > .right > .content {
-            font-size: 35px;
+        .confidence {
+            font-size: 18px;
+            color: #666;
         }
 
-        img {
-            height: 50vh;
-            margin: auto;
-            border-radius: 5px 5px 0 0;
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
         }
 
-        @media only screen and (max-width: 500px) {
-            .text {
-                display: flex;
-                flex-direction: column;
-            }
-
-            .video {
-                height: 30vh;
-            }
-
-            img {
-                width: 100vw;
-                max-height: 30vh;
-                border-radius: 0;
-            }
-
-            .main {
-                min-height: 100vh;
-                width: 100vw;
-                border-radius: 0;
-            }
-
-            .text > * > .title {
-                padding: 10px;
-                font-size: 20px;
-                opacity: 0.7;
-                padding: 0;
-                margin: 0;
-            }
-
-            .text > .left > .content {
-                font-size: 20px;
-            }
-
-            .text > .right > .content {
-                font-size: 25px;
-            }
+        .info {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
         }
-
     </style>
-
 </head>
+
 <body>
-    <script>
-        setInterval(function(){ 
-            axios.get('/suggestions')
-            .then(function (response) {
-                const myNode = document.getElementById("sugg-content");
-                myNode.textContent = '';
-                for (var i = 0; i < response.data.length; i++) {
-                    var item = document.createElement('li');
-                    item.appendChild(document.createTextNode(response.data[i]));
-                    document.getElementById('sugg-content').appendChild(item);
-                }
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-        }, 1000);
-
-        setInterval(function(){ 
-            axios.get('/sentence')
-            .then(function (response) {
-                console.log(response.data)
-                document.getElementById("sugg-sentence").textContent = response.data;
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-        }, 1000);
-
-        document.body.onkeyup = function(e){
-            if(e.keyCode == 13){
-                axios.get('/trigger')
-                .then(function (response) {
-                    console.log(response.data)
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
-            }
-            else if(e.keyCode == 32){
-                axios.get('/char?character=space')
-                .then(function (response) {
-                    console.log(response.data)
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
-            }
-            else if(e.keyCode == 49){
-                axios.get('/char?character=1')
-                .then(function (response) {
-                    console.log(response.data)
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
-            }
-            else if(e.keyCode == 50){
-                axios.get('/char?character=2')
-                .then(function (response) {
-                    console.log(response.data)
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
-            }
-            else if(e.keyCode == 51){
-                axios.get('/char?character=3')
-                .then(function (response) {
-                    console.log(response.data)
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
-            }
-            else if(e.keyCode == 52){
-                axios.get('/char?character=4')
-                .then(function (response) {
-                    console.log(response.data)
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
-            }
-            else if(e.keyCode == 53){
-                axios.get('/char?character=5')
-                .then(function (response) {
-                    console.log(response.data)
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
-            }
-        }
-
-        function tts() {
-            var text = document.getElementById("sugg-sentence").innerHTML;
-            var speech = new SpeechSynthesisUtterance(text);
-            speech.lang = 'en-US';
-            window.speechSynthesis.speak(speech);
-        }
-
-    </script>
-
     <div class="container">
-        <div class="main">
-            <div class="video">
-                <img src="{{ url_for('video_feed') }}" >
-            </div>
-            <div class="text">
-                <div class="left">
-                    <p class="title">Suggestions:</p>
-                    <ol class="content" id="sugg-content">
-                        <!-- Dynamically fill top 5 suggested words -->
-                    </ol>
-                </div>
-                <div class="right">
-                    <p class="title">Sentence:</p>
-                    <p class="content" id="sugg-sentence">
-                        <!-- Dynamically fill the completed sentence -->
-                    </p>
-                    <button onclick="tts()">Speak!</button>
-                </div>
-            </div>
+        <h1>🤟 Real-time Sign Language Detection</h1>
+
+        <div class="info">
+            <strong>Instructions:</strong> Position your hand in front of the camera and make sign language gestures.
+            The model recognizes letters A-Z (except J and Z which require motion).
         </div>
+
+        <div class="video-container">
+            <video id="video" width="400" height="300" autoplay></video>
+            <canvas id="canvas" width="400" height="300"></canvas>
+        </div>
+
+        <div class="controls">
+            <button id="startBtn" onclick="startCamera()">Start Camera</button>
+            <button id="stopBtn" onclick="stopCamera()" disabled>Stop Camera</button>
+            <button id="predictBtn" onclick="togglePrediction()" disabled>Start Prediction</button>
+        </div>
+
+        <div id="prediction" class="prediction" style="display: none;">
+            <h2>Prediction:</h2>
+            <div class="letter" id="predictedLetter">-</div>
+            <div class="confidence" id="confidence">Confidence: 0%</div>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
     </div>
+
+    <script>
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let stream = null;
+        let predictionInterval = null;
+        let isPredicting = false;
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: 400,
+                        height: 300,
+                        facingMode: 'user'
+                    }
+                });
+                video.srcObject = stream;
+
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+                document.getElementById('predictBtn').disabled = false;
+                hideError();
+            } catch (err) {
+                showError('Error accessing camera: ' + err.message);
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                let tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+                stream = null;
+            }
+
+            if (predictionInterval) {
+                clearInterval(predictionInterval);
+                predictionInterval = null;
+                isPredicting = false;
+            }
+
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('predictBtn').disabled = true;
+            document.getElementById('predictBtn').textContent = 'Start Prediction';
+            document.getElementById('prediction').style.display = 'none';
+        }
+
+        function togglePrediction() {
+            if (!isPredicting) {
+                startPrediction();
+            } else {
+                stopPrediction();
+            }
+        }
+
+        function startPrediction() {
+            isPredicting = true;
+            document.getElementById('predictBtn').textContent = 'Stop Prediction';
+            document.getElementById('prediction').style.display = 'block';
+
+            predictionInterval = setInterval(captureAndPredict, 1000);
+        }
+
+        function stopPrediction() {
+            if (predictionInterval) {
+                clearInterval(predictionInterval);
+                predictionInterval = null;
+            }
+            isPredicting = false;
+            document.getElementById('predictBtn').textContent = 'Start Prediction';
+            document.getElementById('prediction').style.display = 'none';
+        }
+
+        async function captureAndPredict() {
+            if (!stream) return;
+
+            // Draw video frame to canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert canvas to base64
+            let imageData = canvas.toDataURL('image/png');
+
+            try {
+                // Send to backend for prediction
+                let response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ image: imageData })
+                });
+
+                let result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('predictedLetter').textContent = result.letter;
+                    document.getElementById('confidence').textContent =
+                        `Confidence: ${(result.confidence * 100).toFixed(1)}%`;
+                    hideError();
+                } else {
+                    showError('Prediction error: ' + result.error);
+                }
+            } catch (err) {
+                showError('Network error: ' + err.message);
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+    </script>
 </body>
+
 </html>

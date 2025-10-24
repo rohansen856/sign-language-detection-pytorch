@@ -1,20 +1,52 @@
-# Sign_Language_Detector-PyTorch
-Recognition of hand gestures in 3D space using a single low resolution camera for converting American Sign Language into any spoken language.
+# Sign Language Detector - Real-time ASL Recognition
 
-## Set Up Instructions
+A FastAPI-based American Sign Language (ASL) detector that recognizes hand gestures in real-time using computer vision and deep learning. The system converts ASL alphabetic letters (A-Z, excluding J and Z which require motion) into text using a Convolutional Neural Network trained on the Sign Language MNIST dataset.
 
-The `requirements.txt` file should list all Python libraries that your notebooks
-depend on, and they will be installed using:
+## 🚀 Quick Start
 
-```
-pip install -r requirements.txt
-```
+### Prerequisites
+- Python 3.8+
+- Webcam for real-time detection
+- TensorFlow 2.x compatible system
 
-To run the web application:
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd Sign_Language_Detector-PyTorch
+   ```
+
+2. **Create and activate virtual environment:**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+### Running the Application
+
+#### FastAPI Web Application (Recommended)
+```bash
+uvicorn app:app --host 0.0.0.0 --port 8080 --reload
 ```
-python app.py -i 0.0.0.0 -o 8080
+Access the application at http://localhost:8080/
+
+#### Alternative: Direct Python execution
+```bash
+python app.py
 ```
-It will run your app on http://localhost:8080/
+Runs on http://localhost:8000/
+
+#### Standalone OpenCV Application
+```bash
+python main.py
+```
+Opens OpenCV window with real-time detection. Press 'q' to quit.
 
 ## Screenshots
 ### H
@@ -38,17 +70,98 @@ American Sign Language (ASL) is a visual language. With signing, the brain proce
 ![ASL](https://user-images.githubusercontent.com/34855465/76790591-28ecca00-67e5-11ea-990d-b6540acb9a1b.png)
 
 
-## Dataset used
-Sign Language MNIST (https://www.kaggle.com/datamunge/sign-language-mnist)
-Each training and test case represents a label (0-25) as a one-to-one map for each alphabetic letter A-Z (and no cases for 9=J or 25=Z because of gesture motions).
+## 📊 Technical Architecture
 
-## Working
+### Model Details
+- **Framework:** TensorFlow/Keras (migrated from PyTorch)
+- **Architecture:** Convolutional Neural Network (CNN)
+- **Input:** 28×28 grayscale images
+- **Output:** 24 classes (A-Y, excluding J and Z)
+- **Model File:** `sign_mnist.h5`
+
+### Image Processing Pipeline
+1. **Capture:** Real-time video from webcam
+2. **Preprocessing:**
+   - Resize to 28×28 pixels
+   - Convert to grayscale
+   - Normalize pixel values (0-1 range)
+3. **Inference:** CNN model prediction
+4. **Post-processing:** Confidence thresholding and label mapping
+
+### API Endpoints
+- `GET /` - Main web interface
+- `POST /predict` - Image prediction endpoint
+- `GET /health` - Health check endpoint
+
+### Dataset
+**Sign Language MNIST** (https://www.kaggle.com/datamunge/sign-language-mnist)
+- Training samples: 27,455 images
+- Test samples: 7,172 images
+- Format: 28×28 pixel values with labels 0-24 (A-Y)
+- **Note:** J (index 9) and Z (index 25) excluded due to motion requirements
+- Each image represents a single ASL letter gesture
+
+## 🛠️ Features
+
+### Core Functionality
+- **Real-time Detection:** Live webcam feed with instant gesture recognition
+- **High Accuracy:** CNN model trained on Sign Language MNIST dataset
+- **Web Interface:** Modern FastAPI-based web application
+- **Cross-platform:** Runs on Windows, macOS, and Linux
+
+### Advanced Features
+- **Confidence Scoring:** Displays prediction confidence for each gesture
+- **Health Monitoring:** Built-in health check endpoint for system monitoring
+- **Error Handling:** Robust error handling and logging
+- **GPU/CPU Flexibility:** Automatic fallback to CPU if GPU issues occur
+
 ![steps](https://user-images.githubusercontent.com/34855465/76790048-1625c580-67e4-11ea-9fcb-77339e2c4658.png)
 
-Autocompletion and Word Suggestion simplify and accelerate the process of information transmission. The user can select one out of the top 4 suggestions or keep making more gestures until the desired word is obtained. 
+### Future Enhancements
+- Text autocompletion and word suggestions
+- Sentence building capabilities
+- Multi-language support 
 
 
-## Use Cases
-1. Deaf people can have a common classroom by asking their questions/doubts without any hesitation
-2. Inclusion of this community in normal schools.
-3. Tourist Guides can communicate better using sign language
+## 🎯 Use Cases & Applications
+
+### Educational
+- **Inclusive Classrooms:** Enable deaf students to participate actively in discussions
+- **ASL Learning:** Interactive tool for learning American Sign Language
+- **Teacher Training:** Help educators understand ASL communication
+
+### Professional
+- **Interpretation Services:** Supplement professional interpreters in various settings
+- **Customer Service:** Improve accessibility in retail and service industries
+- **Healthcare:** Assist medical professionals in communicating with deaf patients
+
+### Personal & Social
+- **Family Communication:** Bridge communication gaps in families with deaf members
+- **Tourism:** Help travelers communicate in deaf communities
+- **Technology Integration:** Embed in smart devices for voice-free interaction
+
+## 🔧 Development
+
+### Project Structure
+```
+├── app.py              # FastAPI web application
+├── main.py             # Standalone OpenCV application
+├── model.py            # PyTorch model definition (legacy)
+├── sign_mnist.h5       # Trained TensorFlow model
+├── requirements.txt    # Python dependencies
+├── templates/          # HTML templates
+├── Dataset/           # Training and test data
+└── AI Experiments/    # Jupyter notebooks for development
+```
+
+### Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+### Troubleshooting
+- **GPU Issues:** The app automatically falls back to CPU if CUDA errors occur
+- **Camera Access:** Ensure your webcam is not being used by other applications
+- **Dependencies:** Run `pip install -r requirements.txt` to install all required packages

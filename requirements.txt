@@ -1,7 +1,8 @@
 opencv_python
 numpy
-Flask
+fastapi
 uvicorn
-autocomplete
-torch
-imutils
+jinja2
+tensorflow
+pillow
+python-multipart
